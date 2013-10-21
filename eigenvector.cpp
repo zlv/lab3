@@ -1,10 +1,13 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <string.h>
 #include <cmath>
+#include "PolStr.h"
 #include <stdexcept>
 using namespace std;
-void findP(int,double**);
+double** findP(int,double**);
+double* findLa(int,double**);
 void mul(int,double**,double**,double**);
 int main(int argc, char **argv) {
         int type;
@@ -30,7 +33,8 @@ int main(int argc, char **argv) {
         try {
             double **result;
             if(type==1) {
-                findP(n,matrix);
+               double** P=findP(n,matrix);
+               findLa(n,P);
             }
             for (int i=0; i<n; i++) {
                 delete[] matrix[i];
@@ -43,7 +47,7 @@ int main(int argc, char **argv) {
                 
         return 0;
 }
-void findP(int n, double** a) {
+double** findP(int n, double** a) {
     double **acur = new double*[n];
     double **m = new double*[n];
     double **minv = new double*[n];
@@ -89,19 +93,41 @@ void findP(int n, double** a) {
         }
     }
     for (int i=0; i<n; i++) {
-        delete[] acur[i];
         delete[] m[i];
         delete[] minv[i];
         delete[] e[i];
         delete[] temp[i];
     }
-    delete[] acur;
     delete[] m;
     delete[] minv;
     delete[] e;
     delete[] temp;
+    return acur;
 }
 
+double* findLa(int n, double** a) {
+        std::stringstream ss;
+        string str;
+        int h=-1*n%2;
+        ss<<"x^"<<n<<" + ";
+        for(int i=0;i<n;i++)
+                ss<<a[0][i]<<" * x^"<<n-i-1<<" + ";
+        ss<<"0";
+//        ss>>str;
+
+        char* t = new char[1024+1];
+              str="x^4 + 3 * x^3 + 3.9 * x^2 + 18.66 * x^1 + 14.08 * x^0 + 0";
+        strcpy(t,str.c_str());
+       cout<<str<<'\n';
+       
+        t=CreatePolStr(t,0);
+         cout<<t<<'\n';
+      
+        double aa=1;
+        cout<<EvalPolStr(t,aa)<<'\n';
+  
+//        cout<<str;
+}
 void mul(int n, double** res, double** a, double** b) {
     for(int i=0;i<n;i++) {
         for(int j=0;j<n;j++) {
