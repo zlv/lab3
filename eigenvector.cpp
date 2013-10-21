@@ -4,22 +4,17 @@
 #include <cmath>
 #include <stdexcept>
 using namespace std;
+void findP(int,double**);
+void mul(int,double**,double**,double**);
 int main(int argc, char **argv) {
         int type;
         int n;
         double **matrix;
         double **b;
-        cin >>type;
-        int solveType = type<=3?1:2;
-        type=(type-1)%3+1;
-        cin >> n;
-        double *x = new double[n];
+        cin >>type >> n;
         matrix=new double*[n];
-        b= new double*[1];
-        b[0]= new double[n];
         double eps=1e-3;
         cout.precision(-log10(eps));
-//        cout.
         cout << "matrix input:\n";
         for(int i=0;i<n;i++)
         {
@@ -28,7 +23,6 @@ int main(int argc, char **argv) {
                         cin >> matrix[i][j];
                         cout << matrix[i][j] << ' ';
                 }
-                cin>>b[0][i];
                 cout << endl;
         }
         double epsf=0;
@@ -36,53 +30,85 @@ int main(int argc, char **argv) {
         try {
             double **result;
             if(type==1) {
-                if (solveType==1) {
-                    prepare(matrix,n,b);
-                    gauss(n,0,x,eps,epsf,epsv);
-                    cout<<"det: "<<det()<<'\n';
-                }
-                else {
-                    itern(matrix,n,b[0],x,eps,epsf,epsv);
-                }
-                cout << "x: ";
-                for(int i=0;i<n;i++)
-                    cout <<x[i] << ' ';
-                cout << "\nepsilon vector: ";
-                for(int i=0;i<n;i++)
-                    cout << scientific << epsv[i] << ' ';
-                cout << "\neps : " << epsf << endl;
-            }
-            else if (type==2) {
-                    prepare(matrix,n,b);
-                    cout<<"det: "<<det()<<'\n';
-            }
-            else if (type==3) {
-                result=new double*[n];
-                for(int i=0;i<n;i++)
-                    result[i]= new double[n];
-                inversed(solveType,matrix,n,result,eps,epsf,epsv);
-                cout << "\nreversed matrix : " << endl;
-                for (int i=0; i<n; i++) {
-                    for (int j=0; j<n; j++)
-                        cout << result[i][j] << ' ';
-                    cout << endl;
-                }
-                cout << endl;
+                findP(n,matrix);
             }
             for (int i=0; i<n; i++) {
                 delete[] matrix[i];
-                if (type==3)
-                    delete[] result[i];
             }
             delete[] matrix;
-            if (type==3)
-                delete[] result;
-            delete[] b;
-            delete[] x;
         }
         catch (invalid_argument e) {
             cerr << e.what() << endl;
         }
                 
         return 0;
+}
+void findP(int n, double** a) {
+    double **acur = new double*[n];
+    double **m = new double*[n];
+    double **minv = new double*[n];
+    double **e = new double*[n];
+    double **temp = new double*[n];
+    for (int i=0; i<n; i++) {
+        acur[i] = new double[n];
+        m[i] = new double[n];
+        minv[i] = new double[n];
+        e[i] = new double[n];
+        temp[i] = new double[n];
+        for (int j=0; j<n; j++) {
+            acur[i][j] = a[i][j];
+            e[i][j] = i==j;
+        }
+    }
+    for (int k=0; k<n-1; k++) {
+        int realk = n-k-2;
+        for (int i=0; i<n; i++) {
+            for (int j=0; j<n; j++) {
+                if (i!=realk) {
+                    m[i][j] = minv[i][j] = e[i][j];
+                }
+                else {
+                    minv[i][j] = acur[realk+1][j];
+                    if (j!=realk) {
+                        m[i][j] = -acur[realk+1][j]/acur[realk+1][realk];
+                    }
+                    else {
+                        m[i][j] = 1/acur[realk+1][realk];
+                    }
+                }
+            }
+        }
+        mul(n,temp,minv,acur);
+        mul(n,acur,temp,m);
+        cout << "current matrix" << k << endl;
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                cout << acur[i][j] << ' ';
+            }
+            cout << endl;
+        }
+    }
+    for (int i=0; i<n; i++) {
+        delete[] acur[i];
+        delete[] m[i];
+        delete[] minv[i];
+        delete[] e[i];
+        delete[] temp[i];
+    }
+    delete[] acur;
+    delete[] m;
+    delete[] minv;
+    delete[] e;
+    delete[] temp;
+}
+
+void mul(int n, double** res, double** a, double** b) {
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++) {
+            res[i][j] = 0;
+            for(int k=0;k<n;k++) {
+                res[i][j]+=a[i][k]*b[k][j];
+            }
+        }
+    }
 }
