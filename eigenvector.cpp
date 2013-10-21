@@ -7,7 +7,7 @@
 #include <stdexcept>
 using namespace std;
 double** findP(int,double**);
-double* findLa(int,double**);
+double* findLa(int,double**,const double);
 void mul(int,double**,double**,double**);
 int main(int argc, char **argv) {
         int type;
@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
         double **b;
         cin >>type >> n;
         matrix=new double*[n];
-        double eps=1e-3;
+        double eps=1e-5;
         cout.precision(-log10(eps));
         cout << "matrix input:\n";
         for(int i=0;i<n;i++)
@@ -32,14 +32,17 @@ int main(int argc, char **argv) {
         double *epsv = new double[n];
         try {
             double **result;
+            double **P;
             if(type==1) {
-               double** P=findP(n,matrix);
-               findLa(n,P);
+               P=findP(n,matrix);
+               findLa(n,P,eps);
             }
             for (int i=0; i<n; i++) {
                 delete[] matrix[i];
+                delete[] P[i];
             }
             delete[] matrix;
+            delete[] P;
         }
         catch (invalid_argument e) {
             cerr << e.what() << endl;
@@ -105,28 +108,54 @@ double** findP(int n, double** a) {
     return acur;
 }
 
-double* findLa(int n, double** a) {
-        std::stringstream ss;
-        string str;
-        int h=-1*n%2;
-        ss<<"x^"<<n<<" + ";
-        for(int i=0;i<n;i++)
-                ss<<a[0][i]<<" * x^"<<n-i-1<<" + ";
-        ss<<"0";
-//        ss>>str;
+double* findLa(int n, double** a, const double eps) {
+    std::stringstream ss;
+    string str;
+    int h=-1*n%2;
+    ss<<"x^"<<n;
+    for(int i=0;i<n;i++)
+        ss<< (a[0][i]<0?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
 
-        char* t = new char[1024+1];
-              str="x^4 + 3 * x^3 + 3.9 * x^2 + 18.66 * x^1 + 14.08 * x^0 + 0";
-        strcpy(t,str.c_str());
-       cout<<str<<'\n';
-       
-        t=CreatePolStr(t,0);
-         cout<<t<<'\n';
+    char* t = new char[1024+1];
+    strcpy(t,ss.str().c_str());
+    cout<<ss.str() << endl << str<<'\n';
+    t=CreatePolStr(t,0);
+    cout<<t<<'\n';
       
-        double aa=1;
-        cout<<EvalPolStr(t,aa)<<'\n';
-  
-//        cout<<str;
+    const double delta = eps*1e2;
+    const double minx = -1;
+    const double maxx = 4;
+    double *xi = new double[n];
+    double *ximult = new double[n];
+    int lastxi = -1;
+    int multsum = 0;
+    for (double x=minx; x<maxx; x+=eps) {
+        if (fabs(EvalPolStr(t,x))<delta) {
+            if (lastxi==-1 || fabs(xi[lastxi]-x)>2*eps) {
+                //cout << x << endl;
+                xi[++lastxi] = x;
+                ximult[multsum++] = 1;
+            }
+            else if (lastxi!=-1) {
+                //cout << "same: " << x << endl;
+                xi[lastxi] = x;
+            }
+        }
+    }
+    int i = 0;
+    while (multsum<n) {
+        int derIndex = 1;
+        while (fabs(EvalPolStr(t,xi[i],derIndex++))<delta) {
+            ximult[i++]++;
+            multsum++;
+            if (multsum>=n) break;
+        }
+    }
+    for (int i=0; i<=lastxi; i++)
+        cout << xi[i] << ' ' << ximult[i] << endl;
+    cout << endl;
+    delete[] xi;
+    delete[] ximult;
 }
 void mul(int n, double** res, double** a, double** b) {
     for(int i=0;i<n;i++) {
