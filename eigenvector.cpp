@@ -11,6 +11,7 @@ double* findLa(int,double**,const double,double**,double**);
 void mul(int,double**,double**,double**);
 void mulV(int, double*, double**, double*);
 void mulC(int, double*, double*, double);
+double determ(double**, int);
 int main(int argc, char **argv) {
         int type;
         int n;
@@ -259,4 +260,36 @@ void mulC(int n, double* res, double* a, double b) {
     for(int i=0;i<n;i++) {
             res[i] = a[i]*b;
     }
+}
+ 
+double determ(double** A, int n)
+{
+        int i,j;
+        double det=0;
+        double** matr;
+        if(n==1)
+        {
+                det=A[0][0];
+        }
+        else if(n==2)
+        {
+                det=A[0][0]*A[1][1]-A[0][1]*A[1][0];
+        }
+        else
+        {
+                matr=new double*[n-1];
+                for(i=0;i<n;++i)
+                {
+                        for(j=0;j<n-1;++j)
+                        {
+                                if(j<i) 
+                                        matr[j]=A[j];
+                                else
+                                        matr[j]=A[j+1];
+                        }
+                        det+=pow((double)-1, (i+j))*determ(matr, n-1)*A[i][n-1];
+                }
+                delete[] matr;
+        }
+        return det;
 }
