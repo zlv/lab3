@@ -102,19 +102,23 @@ double** findP(int n, double** a, double ***s) {
             }
         }
         mul(n,temp,minv,acur);
-        mul(n,acur,temp,m);
+        //mul(n,acur,temp,m);
         cout << "current matrix" << k << endl;
         for(int i=0;i<n;i++) {
             for(int j=0;j<n;j++) {
+                acur[i][j] = temp[i][j];
                 cout << acur[i][j] << ' ';
             }
             cout << endl;
         }
+        cout << "s matrix" << n-k-1 << endl;
         if (k==0) {
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
                     (*s)[i][j] = m[i][j];
+                    cout << (*s)[i][j] << ' ';
                 }
+                cout << endl;
             }
         }
         else {
@@ -122,9 +126,20 @@ double** findP(int n, double** a, double ***s) {
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
                     (*s)[i][j] = temp[i][j];
+                    cout << (*s)[i][j] << ' ';
                 }
+                cout << endl;
             }
         }
+    }
+    mul(n,temp,acur,*s);
+    cout << "current matrix" << endl;
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++) {
+            acur[i][j] = temp[i][j];
+            cout << acur[i][j] << ' ';
+        }
+        cout << endl;
     }
     cout << "s:\n";
     for(int i=0;i<n;i++) {
@@ -151,9 +166,9 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     std::stringstream ss;
     string str;
     bool h=n%2;
-    ss<<(h?" ":" - ")<<"x^"<<n;
+    ss<<(!h?"":" - ")<<"x^"<<n;
     for(int i=0;i<n;i++)
-        ss<< (a[0][i]<0&&h?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
+        ss<< (a[0][i]<0^h?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
     char* t = new char[1024+1];
     strcpy(t,ss.str().c_str());
     cout<<ss.str() << endl << str<<'\n';
@@ -161,7 +176,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     cout<<t<<'\n';
       
     const double delta = eps*1e2;
-    const double minx = -1;
+    const double minx = -3;
     const double maxx = 4;
     double *xi = new double[n];
     double *ximult = new double[n];
@@ -193,34 +208,31 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
 
     for (int i=0; i<=lastxi; i++)
     {
-        cout <<">>"<<endl<< xi[i] << ' ' << ximult[i] << endl<<"============"<<endl;
-                y[i]=new double[n];
+        cout << "eigennumber : " << xi[i] << endl;
+        cout << "y" << i << ":\n";
+        y[i]=new double[n];
         for(int j=0;j<n;j++)
         {
-                y[i][j]=pow(xi[i],j);
+                y[i][j]=pow(xi[i],n-1-j);
                 cout<<y[i][j]<<endl;
         }
     }
     double* tt=new double[n];
-    for(int i=0;i<n;i++)
-    {
-    
-        for(int j=0;j<n;j++)
-        {
-               cout<<S[i][j];       
-        }
-        cout<<'\n';
-    }
     mulV(n,tt,S,y[0]);
-    cout <<"========"<< endl;
-    double* r=new double[n];
+    cout <<"eigenvector:" << endl;
     for(int i=0;i<n;i++)
         cout<<tt[i]<<'\n';
+    double* r=new double[n];
     mulV(n,r,A,tt);
     mulC(n,tt,r,xi[0]);
+    cout <<"A*x0-eig0*x0:" << endl;
     for(int i=0;i<n;i++)
-        cout<<r[i]<<"-"<<tt[i]<<'\n';
+        cout<<r[i]<<" - "<<tt[i]<<'\n';
     
+    for(int i=0;i<n;i++)
+        delete[] y[i];
+    delete[] r;
+    delete[] y;
     delete[] xi;
     delete[] ximult;
 }
