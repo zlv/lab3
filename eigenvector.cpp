@@ -11,6 +11,7 @@ double* findLa(int,double**,const double,double**,double**);
 void mul(int,double**,double**,double**);
 void mulV(int, double*, double**, double*);
 void mulC(int, double*, double*, double);
+void mulC(int, double**, double**, double);
 double determ(double**, int);
 int main(int argc, char **argv) {
         int type;
@@ -217,25 +218,48 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
                 cout<<y[i][j]<<endl;
         }
     }
-    double* tt=new double[n];
-    mulV(n,tt,S,y[0]);
-    cout <<"eigenvector:" << endl;
+    double** tt=new double*[n];
+    double** r=new double*[n];
     for(int i=0;i<n;i++)
-        cout<<tt[i]<<'\n';
-    cout <<"matrix: \n";
-    for(int i=0;i<n;i++) {
-        for(int j=0;j<n;j++) {
-            cout << A[i][j] << ' ';
-        }
-        cout << endl;
+    {
+            tt[i]=new double[n];
+            r[i]=new double[n];
+            mulV(n,tt[i],S,y[i]);
+            mulV(n,r[i],A,tt[i]);
+            mulC(n,tt[i],r[i],xi[i]);
     }
-    double* r=new double[n];
-    mulV(n,r,A,tt);
-    mulC(n,tt,r,xi[0]);
     cout <<"A*x0-eig0*x0:" << endl;
-    for(int i=0;i<n;i++)
-        cout<<r[i]<<" - "<<tt[i]<<'\n';
     
+    double **e = new double*[n];
+    for (int i=0; i<n; i++) {
+        e[i] = new double[n];
+        for (int j=0; j<n; j++) {
+            e[i][j] = i==j;
+        }
+    }
+    for(int i=0;i<n;i++)
+    {
+    
+        double **eTmp = new double*[n];
+        for(int j=0;j<n;j++)
+                eTmp[j]=new double[n];
+        mulC(n,eTmp,e,xi[i]);
+        cout <<"matrix: \n";
+        for(int k=0;k<n;k++) {
+                for(int l=0;l<n;l++) {
+                cout << A[k][l]-eTmp[k][l] << ' ';
+                }
+        cout << endl;
+        }
+
+        
+    }
+    for(int i=0;i<n;i++)
+    {
+        cout<<"vect:"<<'\n';
+        for(int j=0;j<n;j++)
+                cout<<r[i][j]-tt[i][j]<<'\n';
+    }
     for(int i=0;i<n;i++)
         delete[] y[i];
     delete[] r;
@@ -265,6 +289,12 @@ void mulV(int n, double* res, double** a, double* b) {
 void mulC(int n, double* res, double* a, double b) {
     for(int i=0;i<n;i++) {
             res[i] = a[i]*b;
+    }
+}
+void mulC(int n, double** res, double** a, double b) {
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++)
+            res[i][j] = a[i][j]*b;
     }
 }
  
