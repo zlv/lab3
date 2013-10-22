@@ -6,10 +6,11 @@
 #include "PolStr.h"
 #include <stdexcept>
 using namespace std;
-double** findP(int,double**,double **s);
-double* findLa(int,double**,const double,double**);
+double** findP(int,double**,double ***s);
+double* findLa(int,double**,const double,double**,double**);
 void mul(int,double**,double**,double**);
 void mulV(int, double*, double**, double*);
+void mulC(int, double*, double*, double);
 int main(int argc, char **argv) {
         int type;
         int n;
@@ -36,16 +37,26 @@ int main(int argc, char **argv) {
             double **P;
             double **s;
             if(type==1) {
-               P=findP(n,matrix,s);
-               findLa(n,P,eps,matrix);
+               P=findP(n,matrix,&s);
+               
+    cout << "s:\n";
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++) {
+            cout << s[i][j] << ' ';
+        }
+        cout << endl;
+    }
+               findLa(n,P,eps,matrix,s);
                
             }
             for (int i=0; i<n; i++) {
                 delete[] matrix[i];
+                delete[] s[i];
                 delete[] P[i];
             }
             delete[] matrix;
             delete[] P;
+            delete[] s;
         }
         catch (invalid_argument e) {
             cerr << e.what() << endl;
@@ -53,20 +64,20 @@ int main(int argc, char **argv) {
                 
         return 0;
 }
-double** findP(int n, double** a, double **s) {
+double** findP(int n, double** a, double ***s) {
     double **acur = new double*[n];
     double **m = new double*[n];
     double **minv = new double*[n];
     double **e = new double*[n];
     double **temp = new double*[n];
-    s = new double*[n];
+    *s = new double*[n];
     for (int i=0; i<n; i++) {
         acur[i] = new double[n];
         m[i] = new double[n];
         minv[i] = new double[n];
         e[i] = new double[n];
         temp[i] = new double[n];
-        s[i] = new double[n];
+        (*s)[i] = new double[n];
         for (int j=0; j<n; j++) {
             acur[i][j] = a[i][j];
             e[i][j] = i==j;
@@ -102,15 +113,15 @@ double** findP(int n, double** a, double **s) {
         if (k==0) {
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
-                    s[i][j] = m[i][j];
+                    (*s)[i][j] = m[i][j];
                 }
             }
         }
         else {
-            mul(n,temp,s,m);
+            mul(n,temp,*s,m);
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
-                    s[i][j] = temp[i][j];
+                    (*s)[i][j] = temp[i][j];
                 }
             }
         }
@@ -118,7 +129,7 @@ double** findP(int n, double** a, double **s) {
     cout << "s:\n";
     for(int i=0;i<n;i++) {
         for(int j=0;j<n;j++) {
-            cout << s[i][j] << ' ';
+            cout << (*s)[i][j] << ' ';
         }
         cout << endl;
     }
@@ -135,7 +146,7 @@ double** findP(int n, double** a, double **s) {
     return acur;
 }
 
-double* findLa(int n, double** a, const double eps,double** A) 
+double* findLa(int n, double** a, const double eps,double** A,double** S) 
 {
     std::stringstream ss;
     string str;
@@ -183,18 +194,33 @@ double* findLa(int n, double** a, const double eps,double** A)
     for (int i=0; i<=lastxi; i++)
     {
         cout <<">>"<<endl<< xi[i] << ' ' << ximult[i] << endl<<"============"<<endl;
+                y[i]=new double[n];
         for(int j=0;j<n;j++)
         {
-                y[i]=new double[n];
                 y[i][j]=pow(xi[i],j);
                 cout<<y[i][j]<<endl;
         }
     }
+    double* tt=new double[n];
+    for(int i=0;i<n;i++)
+    {
+    
+        for(int j=0;j<n;j++)
+        {
+               cout<<S[i][j];       
+        }
+        cout<<'\n';
+    }
+    mulV(n,tt,S,y[0]);
     cout <<"========"<< endl;
     double* r=new double[n];
-    mulV(n,r,A,y[0]);
     for(int i=0;i<n;i++)
-        cout<<r[i]<<'\n';
+        cout<<tt[i]<<'\n';
+    mulV(n,r,A,tt);
+    mulC(n,tt,r,xi[0]);
+    for(int i=0;i<n;i++)
+        cout<<r[i]<<"-"<<tt[i]<<'\n';
+    
     delete[] xi;
     delete[] ximult;
 }
@@ -215,5 +241,10 @@ void mulV(int n, double* res, double** a, double* b) {
             for(int k=0;k<n;k++) {
                 res[i]+=a[i][k]*b[k];
             }
+    }
+}
+void mulC(int n, double* res, double* a, double b) {
+    for(int i=0;i<n;i++) {
+            res[i] = a[i]*b;
     }
 }
