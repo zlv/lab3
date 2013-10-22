@@ -103,12 +103,18 @@ double** findP(int n, double** a, double ***s) {
             }
         }
         mul(n,temp,minv,acur);
-        //mul(n,acur,temp,m);
+        mul(n,acur,temp,m);
         cout << "current matrix" << k << endl;
         for(int i=0;i<n;i++) {
             for(int j=0;j<n;j++) {
-                acur[i][j] = temp[i][j];
                 cout << acur[i][j] << ' ';
+            }
+            cout << endl;
+        }
+        cout << "m matrix" << n-k-1 << endl;
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                cout << m[i][j] << ' ';
             }
             cout << endl;
         }
@@ -133,7 +139,7 @@ double** findP(int n, double** a, double ***s) {
             }
         }
     }
-    mul(n,temp,acur,*s);
+    /*mul(n,temp,acur,*s);
     cout << "current matrix" << endl;
     for(int i=0;i<n;i++) {
         for(int j=0;j<n;j++) {
@@ -141,14 +147,7 @@ double** findP(int n, double** a, double ***s) {
             cout << acur[i][j] << ' ';
         }
         cout << endl;
-    }
-    cout << "s:\n";
-    for(int i=0;i<n;i++) {
-        for(int j=0;j<n;j++) {
-            cout << (*s)[i][j] << ' ';
-        }
-        cout << endl;
-    }
+    }*/
     for (int i=0; i<n; i++) {
         delete[] m[i];
         delete[] minv[i];
@@ -223,6 +222,13 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     cout <<"eigenvector:" << endl;
     for(int i=0;i<n;i++)
         cout<<tt[i]<<'\n';
+    cout <<"matrix: \n";
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++) {
+            cout << A[i][j] << ' ';
+        }
+        cout << endl;
+    }
     double* r=new double[n];
     mulV(n,r,A,tt);
     mulC(n,tt,r,xi[0]);
