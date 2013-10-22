@@ -6,7 +6,7 @@
 #include "PolStr.h"
 #include <stdexcept>
 using namespace std;
-double** findP(int,double**);
+double** findP(int,double**,double **s);
 double* findLa(int,double**,const double,double**);
 void mul(int,double**,double**,double**);
 void mulV(int, double*, double**, double*);
@@ -34,8 +34,9 @@ int main(int argc, char **argv) {
         try {
             double **result;
             double **P;
+            double **s;
             if(type==1) {
-               P=findP(n,matrix);
+               P=findP(n,matrix,s);
                findLa(n,P,eps,matrix);
                
             }
@@ -52,18 +53,20 @@ int main(int argc, char **argv) {
                 
         return 0;
 }
-double** findP(int n, double** a) {
+double** findP(int n, double** a, double **s) {
     double **acur = new double*[n];
     double **m = new double*[n];
     double **minv = new double*[n];
     double **e = new double*[n];
     double **temp = new double*[n];
+    s = new double*[n];
     for (int i=0; i<n; i++) {
         acur[i] = new double[n];
         m[i] = new double[n];
         minv[i] = new double[n];
         e[i] = new double[n];
         temp[i] = new double[n];
+        s[i] = new double[n];
         for (int j=0; j<n; j++) {
             acur[i][j] = a[i][j];
             e[i][j] = i==j;
@@ -96,6 +99,28 @@ double** findP(int n, double** a) {
             }
             cout << endl;
         }
+        if (k==0) {
+            for(int i=0;i<n;i++) {
+                for(int j=0;j<n;j++) {
+                    s[i][j] = m[i][j];
+                }
+            }
+        }
+        else {
+            mul(n,temp,s,m);
+            for(int i=0;i<n;i++) {
+                for(int j=0;j<n;j++) {
+                    s[i][j] = temp[i][j];
+                }
+            }
+        }
+    }
+    cout << "s:\n";
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<n;j++) {
+            cout << s[i][j] << ' ';
+        }
+        cout << endl;
     }
     for (int i=0; i<n; i++) {
         delete[] m[i];
