@@ -226,11 +226,11 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             tt[i]=new double[n];
             r[i]=new double[n];
             mulV(n,tt[i],S,y[i]);
-            mulV(n,r[i],A,tt[i]);
-            mulC(n,tt[i],r[i],xi[i]);
             cout<<"vect"<<i<<'\n';
             for(int j=0;j<n;j++)
                 cout<<tt[i][j]<<'\n';
+            mulV(n,r[i],A,tt[i]);
+            mulC(n,tt[i],r[i],xi[i]);
     }
    
     double **e = new double*[n];
