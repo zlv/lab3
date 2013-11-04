@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
         double **b;
         cin >>type >> n;
         matrix=new double*[n];
-        double eps=1e-5;
+        double eps=1e-6;
         cout.precision(-log10(eps));
         cout << "matrix input:\n";
         for(int i=0;i<n;i++)
@@ -230,7 +230,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             for(int j=0;j<n;j++)
                 cout<<tt[i][j]<<'\n';
             mulV(n,r[i],A,tt[i]);
-            mulC(n,tt[i],r[i],xi[i]);
+            mulC(n,tt[i],tt[i],xi[i]);
     }
    
     double **e = new double*[n];
@@ -240,7 +240,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             e[i][j] = i==j;
         }
     }
-    for(int i=0;i<n;i++)
+    for(int i=0;i<=lastxi;i++)
     {
     
         double **eTmp = new double*[n];
@@ -259,13 +259,13 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
 
         
     }
-    for(int i=0;i<n;i++)
+    for(int i=0;i<=lastxi;i++)
     {
         cout <<"A*x" << i << "-eig" << i << "*x" << i << ":\n";
         for(int j=0;j<n;j++)
                 cout<<r[i][j]-tt[i][j]<<'\n';
     }
-    for(int i=0;i<n;i++)
+    for(int i=0;i<=lastxi;i++)
         delete[] y[i];
     delete[] r;
     delete[] y;
