@@ -200,7 +200,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             if (multsum>=n) break;
         }
     }
-    double **y = new double*[n];
+    double **y = new double*[lastxi];
 
     cout << "eigennumber : ";
     for (int i=0; i<=lastxi; i++) {
@@ -221,15 +221,18 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     }
     double** tt=new double*[n];
     double** r=new double*[n];
-    for(int i=0;i<n;i++)
+    for(int i=0;i<=lastxi;i++)
     {
             tt[i]=new double[n];
             r[i]=new double[n];
             mulV(n,tt[i],S,y[i]);
             mulV(n,r[i],A,tt[i]);
             mulC(n,tt[i],r[i],xi[i]);
+            cout<<"vect"<<i<<'\n';
+            for(int j=0;j<n;j++)
+                cout<<tt[i][j]<<'\n';
     }
-    
+   
     double **e = new double*[n];
     for (int i=0; i<n; i++) {
         e[i] = new double[n];
