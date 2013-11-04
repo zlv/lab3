@@ -192,7 +192,6 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     int i = 0;
     while (multsum<n) {
         int derIndex = 1;
-        //cerr  << i << ": " << xi[i]  << " val: " << eval(a[0],n,xi[i],derIndex) << " v: " << eval(a[0],n,xi[i]) << endl;
         while (fabs(eval(a[0],n,xi[i],derIndex++))<delta) {
             cerr << xi[i] << endl;
             ximult[i++]++;
