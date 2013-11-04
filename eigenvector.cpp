@@ -3,7 +3,6 @@
 #include <sstream>
 #include <string.h>
 #include <cmath>
-#include "PolStr.h"
 #include <stdexcept>
 using namespace std;
 double** findP(int,double**,double ***s);
@@ -40,14 +39,6 @@ int main(int argc, char **argv) {
             double **s;
             if(type==1) {
                P=findP(n,matrix,&s);
-               
-    cout << "s:\n";
-    for(int i=0;i<n;i++) {
-        for(int j=0;j<n;j++) {
-            cout << s[i][j] << ' ';
-        }
-        cout << endl;
-    }
                findLa(n,P,eps,matrix,s);
                
             }
@@ -60,7 +51,7 @@ int main(int argc, char **argv) {
             delete[] P;
             delete[] s;
         }
-        catch (invalid_argument e) {
+        catch (invalid_argument &e) {
             cerr << e.what() << endl;
         }
                 
@@ -105,28 +96,11 @@ double** findP(int n, double** a, double ***s) {
         }
         mul(n,temp,minv,acur);
         mul(n,acur,temp,m);
-        cout << "current matrix" << k << endl;
-        for(int i=0;i<n;i++) {
-            for(int j=0;j<n;j++) {
-                cout << acur[i][j] << ' ';
-            }
-            cout << endl;
-        }
-        cout << "m matrix" << n-k-1 << endl;
-        for(int i=0;i<n;i++) {
-            for(int j=0;j<n;j++) {
-                cout << m[i][j] << ' ';
-            }
-            cout << endl;
-        }
-        cout << "s matrix" << n-k-1 << endl;
         if (k==0) {
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
                     (*s)[i][j] = m[i][j];
-                    cout << (*s)[i][j] << ' ';
                 }
-                cout << endl;
             }
         }
         else {
@@ -134,21 +108,17 @@ double** findP(int n, double** a, double ***s) {
             for(int i=0;i<n;i++) {
                 for(int j=0;j<n;j++) {
                     (*s)[i][j] = temp[i][j];
-                    cout << (*s)[i][j] << ' ';
                 }
-                cout << endl;
             }
         }
     }
-    /*mul(n,temp,acur,*s);
-    cout << "current matrix" << endl;
+    cout << "Frobenius matrix" << endl;
     for(int i=0;i<n;i++) {
         for(int j=0;j<n;j++) {
-            acur[i][j] = temp[i][j];
             cout << acur[i][j] << ' ';
         }
         cout << endl;
-    }*/
+    }
     for (int i=0; i<n; i++) {
         delete[] m[i];
         delete[] minv[i];
@@ -162,6 +132,28 @@ double** findP(int n, double** a, double ***s) {
     return acur;
 }
 
+double findDerMult(int n, int iDerivative) {
+    double advancedDerMult = 1;
+    for (int i=0; i<iDerivative; i++)
+        advancedDerMult *= n-i;
+    return advancedDerMult;
+}
+
+double findSumElement(double x, double a, int powIndex, bool h, double advancedDerMult) {
+    return a*pow(x,powIndex)*(h?1:-1)*advancedDerMult;
+}
+
+double eval(double* a, int n, double x, int iDerivative=0) {
+    bool h=n%2;
+    double sum = findSumElement(x,-1,n-iDerivative,h,findDerMult(n,iDerivative));
+    for (int i=0; i<n; i++) {
+        if (n-i-1-iDerivative<0)
+            break;
+        sum += findSumElement(x,a[i],n-i-1-iDerivative,h,findDerMult(n-i-1,iDerivative));
+    }
+    return sum;
+}
+
 double* findLa(int n, double** a, const double eps,double** A,double** S) 
 {
     std::stringstream ss;
@@ -170,11 +162,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     ss<<(!h?"":" - ")<<"x^"<<n;
     for(int i=0;i<n;i++)
         ss<< (a[0][i]<0^h?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
-    char* t = new char[1024+1];
-    strcpy(t,ss.str().c_str());
-    cout<<ss.str() << endl << str<<'\n';
-    t=CreatePolStr(t,0);
-    cout<<t<<'\n';
+    cout<<ss.str() << endl;
       
     const double delta = eps*1e2;
     const double minx = -3;
@@ -183,23 +171,30 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     double *ximult = new double[n];
     int lastxi = -1;
     int multsum = 0;
+    double dxil = minx;
+    for (int i=-1; i<5; i++)
+        cerr << "x = " << i << " y = " << eval(a[0],n,i) << endl;
+    bool foundValue = 0;
     for (double x=minx; x<maxx; x+=eps) {
-        if (fabs(EvalPolStr(t,x))<delta) {
-            if (lastxi==-1 || fabs(xi[lastxi]-x)>2*eps) {
-                //cout << x << endl;
+        if (eval(a[0],n,x)<delta) {
+            if (lastxi==-1 || fabs(dxil-x)>2*eps) {
                 xi[++lastxi] = x;
                 ximult[multsum++] = 1;
+                foundValue = 1;
             }
-            else if (lastxi!=-1) {
-                //cout << "same: " << x << endl;
-                xi[lastxi] = x;
-            }
+            dxil = x;
+        }
+        else if (foundValue && fabs(xi[lastxi]-dxil)>2*eps) {
+            xi[lastxi] = (xi[lastxi]+dxil)/2;
+            foundValue = 0;
         }
     }
     int i = 0;
     while (multsum<n) {
         int derIndex = 1;
-        while (fabs(EvalPolStr(t,xi[i],derIndex++))<delta) {
+        //cerr  << i << ": " << xi[i]  << " val: " << eval(a[0],n,xi[i],derIndex) << " v: " << eval(a[0],n,xi[i]) << endl;
+        while (fabs(eval(a[0],n,xi[i],derIndex++))<delta) {
+            cerr << xi[i] << endl;
             ximult[i++]++;
             multsum++;
             if (multsum>=n) break;
@@ -207,15 +202,21 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     }
     double **y = new double*[n];
 
+    cout << "eigennumber : ";
+    for (int i=0; i<=lastxi; i++) {
+        cout << xi[i] << ' ';
+    }
+    cout << "\neigen multiplicity : ";
+    for (int i=0; i<=lastxi; i++) {
+        cout << ximult[i] << ' ';
+    }
+    cout << endl;
     for (int i=0; i<=lastxi; i++)
     {
-        cout << "eigennumber : " << xi[i] << endl;
-        cout << "y" << i << ":\n";
         y[i]=new double[n];
         for(int j=0;j<n;j++)
         {
                 y[i][j]=pow(xi[i],n-1-j);
-                cout<<y[i][j]<<endl;
         }
     }
     double** tt=new double*[n];
@@ -228,7 +229,6 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             mulV(n,r[i],A,tt[i]);
             mulC(n,tt[i],r[i],xi[i]);
     }
-    cout <<"A*x0-eig0*x0:" << endl;
     
     double **e = new double*[n];
     for (int i=0; i<n; i++) {
@@ -244,19 +244,21 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
         for(int j=0;j<n;j++)
                 eTmp[j]=new double[n];
         mulC(n,eTmp,e,xi[i]);
-        cout <<"matrix: \n";
+        cout <<"|A-eig" << i << "*E|: ";
         for(int k=0;k<n;k++) {
                 for(int l=0;l<n;l++) {
-                cout << A[k][l]-eTmp[k][l] << ' ';
+                    
+                    eTmp[k][l]=A[k][l]-eTmp[k][l];
                 }
-        cout << endl;
         }
+        
+        cout<<determ(eTmp,n) << endl;
 
         
     }
     for(int i=0;i<n;i++)
     {
-        cout<<"vect:"<<'\n';
+        cout <<"A*x" << i << "-eig" << i << "*x" << i << ":\n";
         for(int j=0;j<n;j++)
                 cout<<r[i][j]-tt[i][j]<<'\n';
     }

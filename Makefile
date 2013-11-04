@@ -1,4 +1,4 @@
-SOURCEOBJS = PolStr.o eigenvector.cpp
+SOURCEOBJS = eigenvector.cpp
 main :
 	g++ -o lab3 $(SOURCEOBJS)
 main-debug :
