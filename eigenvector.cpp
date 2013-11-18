@@ -330,6 +330,5 @@ double determ(double** A, int n)
                         det+=pow((double)-1, (i+j))*determ(matr, n-1)*A[i][n-1];
                 }
         }
-                delete []matr;
         return det;
 }
