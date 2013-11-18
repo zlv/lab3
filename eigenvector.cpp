@@ -242,7 +242,6 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
     }
     for(int i=0;i<=lastxi;i++)
     {
-    
         double **eTmp = new double*[n];
         for(int j=0;j<n;j++)
                 eTmp[j]=new double[n];
@@ -254,10 +253,10 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
                     eTmp[k][l]=A[k][l]-eTmp[k][l];
                 }
         }
-        
         cout<<determ(eTmp,n) << endl;
-
-        
+        for(int j=0;j<n;j++)
+                delete eTmp[j];
+        delete eTmp;
     }
     for(int i=0;i<=lastxi;i++)
     {
@@ -330,7 +329,7 @@ double determ(double** A, int n)
                         }
                         det+=pow((double)-1, (i+j))*determ(matr, n-1)*A[i][n-1];
                 }
-                delete[] matr;
         }
+                delete []matr;
         return det;
 }
