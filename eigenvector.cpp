@@ -164,7 +164,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
         ss<< (a[0][i]<0^h?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
     cout<<ss.str() << endl;
       
-    const double delta = eps*10;
+    const double delta = eps*100;
     const double minx = -3;
     const double maxx = 4;
     double *xi = new double[n];
@@ -187,20 +187,19 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
             }
         }
     }
-    for (int i=0; i<=lastxi; i++)
+    for (int i=0; i<=lastxi; i++) {
         xi[i] = (xi[i]+xifirst[i])/2;
+    }
     delete[] xifirst;
     int i = 0;
     while (multsum<n) {
         int derIndex = 1;
         while (fabs(eval(a[0],n,xi[i],derIndex++))<delta*100) {
-            cerr << "m : " << multsum << " i " << i << endl;
             ximult[i]++;
             multsum++;
         }
         i++;
     }
-cerr << 2;
     double **y = new double*[lastxi];
 
     cout << "eigennumber : ";
