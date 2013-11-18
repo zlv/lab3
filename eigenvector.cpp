@@ -164,38 +164,43 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
         ss<< (a[0][i]<0^h?" + ":" - ")<<fabs(a[0][i])<<" * x^"<<n-i-1;
     cout<<ss.str() << endl;
       
-    const double delta = eps*1e2;
+    const double delta = eps*10;
     const double minx = -3;
     const double maxx = 4;
     double *xi = new double[n];
+    double *xifirst = new double[n];
     double *ximult = new double[n];
     int lastxi = -1;
     int multsum = 0;
-    double dxil = minx;
+    double dxil = minx; //index last
     bool foundValue = 0;
     for (double x=minx; x<maxx; x+=eps) {
-        if (eval(a[0],n,x)<delta) {
-            if (lastxi==-1 || fabs(dxil-x)>2*eps) {
-                xi[++lastxi] = x;
-                ximult[multsum++] = 1;
-                foundValue = 1;
+        if (fabs(eval(a[0],n,x))<delta) {
+            if (lastxi==-1 || fabs(xi[lastxi]-x)>2*eps) {
+                    xi[++lastxi] = x;
+                    xifirst[lastxi] = x;
+                    ximult[multsum++] = 1;
+                    foundValue = 1;
             }
-            dxil = x;
-        }
-        else if (foundValue && fabs(xi[lastxi]-dxil)>2*eps) {
-            xi[lastxi] = (xi[lastxi]+dxil)/2;
-            foundValue = 0;
+            else {
+                xi[lastxi] = x;
+            }
         }
     }
+    for (int i=0; i<=lastxi; i++)
+        xi[i] = (xi[i]+xifirst[i])/2;
+    delete[] xifirst;
     int i = 0;
     while (multsum<n) {
         int derIndex = 1;
-        while (fabs(eval(a[0],n,xi[i],derIndex++))<delta) {
-            ximult[i++]++;
+        while (fabs(eval(a[0],n,xi[i],derIndex++))<delta*100) {
+            cerr << "m : " << multsum << " i " << i << endl;
+            ximult[i]++;
             multsum++;
-            if (multsum>=n) break;
         }
+        i++;
     }
+cerr << 2;
     double **y = new double*[lastxi];
 
     cout << "eigennumber : ";
