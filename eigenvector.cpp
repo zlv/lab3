@@ -200,7 +200,7 @@ double* findLa(int n, double** a, const double eps,double** A,double** S)
         }
         i++;
     }
-    double **y = new double*[lastxi];
+    double **y = new double*[lastxi+1];
 
     cout << "eigennumber : ";
     for (int i=0; i<=lastxi; i++) {
@@ -329,6 +329,7 @@ double determ(double** A, int n)
                         }
                         det+=pow((double)-1, (i+j))*determ(matr, n-1)*A[i][n-1];
                 }
+                delete matr;
         }
         return det;
 }
